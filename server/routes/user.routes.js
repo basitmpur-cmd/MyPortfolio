@@ -6,7 +6,7 @@ import { requireSignin, isAdmin, isSelfOrAdmin } from '../middleware/auth.js'
 const router = express.Router()
 router.param('id', validId)
 router.route('/')
-  .get(requireSignin, ctrl.list)
+  .get(requireSignin, isAdmin, ctrl.list)
   .post(ctrl.create)
   .delete(requireSignin, isAdmin, ctrl.removeAll)
 router.route('/:id')

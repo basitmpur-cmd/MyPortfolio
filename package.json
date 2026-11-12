@@ -6,7 +6,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix client\" \"nodemon server.js\"",
-    "start": "node server.js"
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "npm run dev --prefix client",
+    "hash": "node scripts/hash-password.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

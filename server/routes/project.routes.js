@@ -1,3 +1,4 @@
-import { crudRouter } from './crud.router.js'
+import { crudRouter, PUBLIC } from './crud.router.js'
 import ctrl from '../controllers/project.controller.js'
-export default crudRouter(ctrl, { list: [], read: [] })
+// Anyone can view; only admins create, update or delete.
+export default crudRouter(ctrl, { list: PUBLIC, read: PUBLIC })
