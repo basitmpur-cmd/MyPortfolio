@@ -9,6 +9,7 @@ export default function Home() {
         Welcome to my portfolio. I build clear, fast web applications with React, Node.js and MongoDB.
       </p>
       <p className="mission">My mission: write code that is simple to read and pleasant to use.</p>
+      <p className="mission">Now deployed with automated testing and CI/CD - November 2026.</p>
       <Link className="btn" to="/about">Meet me on the About page</Link>
     </section>
   );
