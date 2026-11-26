@@ -21,7 +21,7 @@ jobs:
     env:
       MONGODB_URI: mongodb://localhost:27017/portfolio_ci
       JWT_SECRET: ci-only-secret-not-used-in-production
-      CLIENT_URL: http://localhost:4173
+      CLIENT_URL: http://127.0.0.1:4173
       ADMIN_NAME: CI Admin
       ADMIN_EMAIL: admin@ci.test
       CI_ADMIN_PASSWORD: ci-admin-pass-123   # throwaway password for the temporary CI database only
@@ -65,11 +65,12 @@ jobs:
         with:
           working-directory: client
           install: true
-          start: npx vite preview --port 4173 --strictPort
-          wait-on: http://localhost:4173
+          start: npx vite preview --host 127.0.0.1 --port 4173 --strictPort
+          wait-on: http://127.0.0.1:4173
+          wait-on-timeout: 120
           browser: chrome
         env:
-          CYPRESS_BASE_URL: http://localhost:4173
+          CYPRESS_BASE_URL: http://127.0.0.1:4173
           CYPRESS_ADMIN_EMAIL: admin@ci.test
           CYPRESS_ADMIN_PASSWORD: ci-admin-pass-123
 
