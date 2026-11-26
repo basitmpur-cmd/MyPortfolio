@@ -61,14 +61,12 @@ jobs:
           sleep 3   # give seedAdmin time to create the administrator
 
       - name: Cypress E2E test (records video)
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: client
-          install: true
-          start: npx vite preview --host 127.0.0.1 --port 4173 --strictPort
-          wait-on: http://127.0.0.1:4173
-          wait-on-timeout: 120
-          browser: chrome
+        working-directory: client
+        run: |
+          npx cypress install
+          nohup npx vite preview --host 127.0.0.1 --port 4173 --strictPort > preview.log 2>&1 &
+          npx --yes wait-on http://127.0.0.1:4173 --timeout 60000
+          npx cypress run
         env:
           CYPRESS_BASE_URL: http://127.0.0.1:4173
           CYPRESS_ADMIN_EMAIL: admin@ci.test
