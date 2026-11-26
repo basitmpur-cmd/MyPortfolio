@@ -1,0 +1,98 @@
+# CI/CD for the MERN portfolio (COMP229 Assignment 4)
+# On every pull request and every push to main: install, run unit tests, build, and run the Cypress E2E test
+# against a real API + MongoDB. Only when everything passes on main are the Render deploy hooks called,
+# so the live site is updated automatically and never with a failing build.
+name: CI-CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports: ['27017:27017']
+    env:
+      MONGODB_URI: mongodb://localhost:27017/portfolio_ci
+      JWT_SECRET: ci-only-secret-not-used-in-production
+      CLIENT_URL: http://localhost:4173
+      ADMIN_NAME: CI Admin
+      ADMIN_EMAIL: admin@ci.test
+      CI_ADMIN_PASSWORD: ci-admin-pass-123   # throwaway password for the temporary CI database only
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            client/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix client
+        env:
+          CYPRESS_INSTALL_BINARY: 0   # the Cypress step below installs the binary itself
+
+      - name: Backend unit tests
+        run: npm test
+
+      - name: Frontend unit tests (Vitest + React Testing Library)
+        run: npm test --prefix client
+
+      - name: Build frontend
+        run: npm run build --prefix client
+
+      - name: Start API against the CI MongoDB
+        run: |
+          export ADMIN_PASSWORD_HASH="$(node -e "console.log(require('bcryptjs').hashSync(process.env.CI_ADMIN_PASSWORD, 10))")"
+          nohup node server.js > api.log 2>&1 &
+          npx --yes wait-on http://localhost:5000/api/health --timeout 60000
+          sleep 3   # give seedAdmin time to create the administrator
+
+      - name: Cypress E2E test (records video)
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: client
+          install: true
+          start: npx vite preview --port 4173 --strictPort
+          wait-on: http://localhost:4173
+          browser: chrome
+        env:
+          CYPRESS_BASE_URL: http://localhost:4173
+          CYPRESS_ADMIN_EMAIL: admin@ci.test
+          CYPRESS_ADMIN_PASSWORD: ci-admin-pass-123
+
+      - name: Upload Cypress video and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-e2e-recording
+          path: |
+            client/cypress/videos
+            client/cypress/screenshots
+          if-no-files-found: ignore
+
+      - name: Show API log on failure
+        if: failure()
+        run: cat api.log || true
+
+  deploy:
+    needs: test-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy API to Render
+        run: curl -fsS -X POST "${{ secrets.RENDER_API_DEPLOY_HOOK }}"
+      - name: Deploy frontend to Render
+        run: curl -fsS -X POST "${{ secrets.RENDER_CLIENT_DEPLOY_HOOK }}"

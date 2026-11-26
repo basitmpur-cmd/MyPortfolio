@@ -1,0 +1,49 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> pick this repository.
+# Secrets (sync: false) are typed into the Render dashboard, never committed.
+# autoDeploy is off: GitHub Actions calls the deploy hooks only after all tests pass.
+services:
+  - type: web
+    name: abdulbasit-portfolio-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        value: https://abdulbasit-portfolio.onrender.com
+      - key: ADMIN_NAME
+        value: Site Admin
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD_HASH
+        sync: false
+
+  - type: web
+    name: abdulbasit-portfolio
+    runtime: static
+    buildCommand: cd client && npm ci && npm run build
+    staticPublishPath: client/dist
+    autoDeploy: false
+    envVars:
+      - key: VITE_API_URL
+        value: https://abdulbasit-portfolio-api.onrender.com
+      - key: CYPRESS_INSTALL_BINARY
+        value: "0"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

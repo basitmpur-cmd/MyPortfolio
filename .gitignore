@@ -7,3 +7,6 @@ dist
 !.env.example
 client/node_modules
 client/dist
+client/cypress/videos
+client/cypress/screenshots
+client/cypress.env.json

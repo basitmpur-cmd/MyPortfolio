@@ -19,7 +19,9 @@ export default function Projects() {
         fields={fields}
         renderItem={(p, i) => (
           <>
-            <img src={`/images/project${(i % 3) + 1}.svg`} alt={`Illustration for ${p.title}`} />
+            <img src={`/images/project${(i % 3) + 1}.svg`} alt={`Illustration for ${p.title}`} width="600" height="360"
+              // The first card image is the Largest Contentful Paint: load it eagerly with high priority.
+              loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : 'auto'} decoding="async" />
             <h2>{p.title}</h2>
             <p>{p.description}</p>
             <p className="dates">Completed: {formatDate(p.completion)}</p>

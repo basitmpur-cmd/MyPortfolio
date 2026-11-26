@@ -3,7 +3,7 @@ import { profile } from '../data.js';
 export default function About() {
   return (
     <section className="page about">
-      <img className="avatar" src="/images/profile.svg" alt={`Profile portrait of ${profile.name}`} />
+      <img className="avatar" src="/images/profile.svg" alt={`Profile portrait of ${profile.name}`} width="260" height="260" />
       <div>
         <h1>{profile.name}</h1>
         <h2>{profile.title}</h2>

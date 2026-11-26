@@ -12,9 +12,12 @@ const app = express()
 app.use(express.json())
 app.use((req, res, next) => { req.body = req.body || {}; next() })
 app.use(helmet())
-app.use(cors({ origin: config.clientUrl }))
+// CLIENT_URL may list several origins separated by commas (local dev + deployed frontend).
+app.use(cors({ origin: config.clientUrl.split(',').map(o => o.trim()) }))
 
 app.get('/', (req, res) => res.json({ message: 'Welcome to My Portfolio application.' }))
+// Health check used by Render and by the CI pipeline to know the API is up.
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/contacts', contactRoutes)

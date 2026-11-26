@@ -9,7 +9,8 @@
     "start": "node server.js",
     "server": "nodemon server.js",
     "client": "npm run dev --prefix client",
-    "hash": "node scripts/hash-password.js"
+    "hash": "node scripts/hash-password.js",
+    "test": "node --test server/test/auth.middleware.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -23,5 +24,8 @@
   "devDependencies": {
     "concurrently": "^9.0.0",
     "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

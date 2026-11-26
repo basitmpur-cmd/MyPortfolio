@@ -7,7 +7,7 @@ export default function Services() {
       <div className="grid">
         {services.map((s) => (
           <article className="card" key={s.title}>
-            <img src={s.image} alt={`${s.title} illustration`} />
+            <img src={s.image} alt={`${s.title} illustration`} width="600" height="360" loading="lazy" decoding="async" />
             <h2>{s.title}</h2>
             <p>{s.text}</p>
           </article>

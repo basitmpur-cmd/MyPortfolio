@@ -64,3 +64,31 @@ protected requests are rejected with 401 again. A copied token remains valid unt
   (qualifications) and Messages (contacts). Admins get the form and Edit/Delete buttons; others are read-only.
 - `pages/Contact.jsx` - saves submissions to MongoDB with `POST /api/contacts`.
 - `auth/ProtectedRoute.jsx` - `/messages` requires sign-in.
+
+## Assignment 4: testing, optimization, deployment and CI/CD
+
+### Tests
+| Command | What it runs |
+|---|---|
+| `npm test` (root) | Backend unit tests for the JWT guards (`server/test`, Node's built-in test runner) |
+| `npm test --prefix client` | Frontend unit tests (Vitest + React Testing Library): sign-in, contact form, admin vs read-only CRUD |
+| `npm run cy:run --prefix client` | Cypress E2E: admin signs in, creates/edits/deletes a project, signs out; unauthenticated write gets 401. Records a video in `client/cypress/videos` |
+
+For Cypress locally: run `npm run dev` in the root, copy `client/cypress.env.example.json` to `client/cypress.env.json`
+(git-ignored) and put the admin email and the plain admin password in it.
+
+### Performance changes
+Route-level code splitting (`React.lazy`), a separate cached `vendor` chunk, metadata stripped from the SVG images
+(about 8 KB to under 0.5 KB each), sized images with lazy loading (eager + high priority for the LCP image),
+non-blocking Google Fonts, and a minimum `main` height so late-loading records no longer shift the footer (CLS 0.089 to 0).
+
+### Deployment (Render + MongoDB Atlas)
+`render.yaml` defines the API (Node web service) and the React static site. Secrets (`MONGODB_URI`, `JWT_SECRET`,
+`ADMIN_EMAIL`, `ADMIN_PASSWORD_HASH`) are set only in the Render dashboard. `CLIENT_URL` on the API and
+`VITE_API_URL` on the static site point the two services at each other.
+
+### CI/CD
+`.github/workflows/ci-cd.yml` runs on pull requests and on pushes to `main`: install, backend and frontend unit tests,
+build, then Cypress against a real API and a MongoDB service container (video uploaded as an artifact). On `main`,
+only after everything passes, it calls the Render deploy hooks stored as the GitHub secrets
+`RENDER_API_DEPLOY_HOOK` and `RENDER_CLIENT_DEPLOY_HOOK`.
